@@ -2,47 +2,58 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
     /**
-     * The attributes that are mass assignable.
+     * Los atributos que se pueden asignar masivamente.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'nombre',
+        'apellido_paterno',
+        'apellido_materno',
         'email',
         'password',
+        'numero_identificacion',
+        'idTipo_identificacion',
+        'fecha_nacimiento',
+        'telefono',
+        'idTipo_usuario',
+        'activo',
+        'last_login_at',
+        'failed_attempts',
+        'password_reset_token',
+        'token_expiration',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Atributos ocultos al serializar.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $hidden = [
         'password',
         'remember_token',
+        'password_reset_token',
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Atributos que deben ser convertidos a tipos nativos.
      *
-     * @return array<string, string>
+     * @var array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'fecha_nacimiento' => 'date',
+        'last_login_at' => 'datetime',
+        'token_expiration' => 'datetime',
+    ];
 }

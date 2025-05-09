@@ -21,11 +21,10 @@ return new class extends Migration
             $table->string('password'); // Contraseña
             $table->rememberToken();
             $table->bigInteger('numero_identificacion'); // Número de identificación
-            $table->foreignId('idTipo_identificacion')->nullable()->constrained('tipos_identificacion')->onDelete('set null');
+            $table->foreignId('idTipo_identificacion')->nullable()->constrained('tipo_identificacion')->onDelete('set null');
             $table->date('fecha_nacimiento')->nullable(); // Fecha de nacimiento
             $table->string('telefono')->nullable(); // Teléfono
             $table->foreignId('idTipo_usuario')->constrained('tipos_usuarios')->onDelete('cascade');
-            $table->foreignId('role_id')->constrained()->onDelete('cascade'); // Relación con la tabla de roles
             $table->tinyInteger('activo')->default(1); // 1 = sí, 0 = no
             $table->timestamp('last_login_at')->nullable(); // Fecha del último inicio de sesión
             $table->integer('failed_attempts')->default(0); // Intentos fallidos de inicio de sesión
