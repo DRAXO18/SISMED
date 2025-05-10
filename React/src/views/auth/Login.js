@@ -1,6 +1,10 @@
-import React from 'react'
 import { Link } from 'react-router-dom'
-import fondoLogin from 'src/assets/images/fondoLogin.jpg'
+import Swal from 'sweetalert2'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+
+import fondoLogin from 'src/assets/images/fondoLogin2.jpg'
+import logoDevilopers from 'src/assets/images/deviloperslogo.webp'
 
 import {
   CButton,
@@ -14,30 +18,94 @@ import {
   CInputGroup,
   CInputGroupText,
   CRow,
+  CFormFeedback,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
-import logoDevilopers from 'src/assets/images/deviloperslogo.webp'
-
 
 const Login = () => {
+  const navigate = useNavigate()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [validated, setValidated] = useState(false)
+  const [loginError, setLoginError] = useState('')
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
+    const form = e.currentTarget
+    if (form.checkValidity() === false) {
+      e.stopPropagation()
+      setValidated(true)
+      return
+    }
+
+    setValidated(true)
+
+    try {
+      const response = await fetch('http://localhost:8000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include', // Para asegurar que las cookies se envíen
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        localStorage.setItem('token', data.token)
+        Swal.fire('Bienvenido', 'Has iniciado sesión correctamente', 'success')
+        navigate('/dashboard')
+      } else {
+        const data = await response.json()
+        setLoginError(data.message || 'Credenciales incorrectas')
+      }
+    } catch (error) {
+      setLoginError('Error de conexión. Intente nuevamente.')
+    }
+  }
+
   return (
-    <div style={{ backgroundImage: `url(${fondoLogin})`, backgroundSize: 'cover', backgroundPosition: 'center' }} className="min-vh-100 d-flex flex-row align-items-center"> 
+    <div style={{ backgroundImage: `url(${fondoLogin})`, backgroundSize: 'cover', backgroundPosition: 'center' }} className="min-vh-100 d-flex flex-row align-items-center">
       <CContainer>
         <CRow className="justify-content-center">
           <CCol md={8}>
             <CCardGroup>
-              <CCard className="p-4 " style={{ backgroundColor: '#4d161699' }}>
+              <CCard className="p-4" style={{ backgroundColor: '#4d161699' }}>
                 <CCardBody>
-                  <CForm>
+                  <CForm
+                    className="needs-validation"
+                    noValidate
+                    validated={validated}
+                    onSubmit={handleSubmit}
+                  >
                     <h1>Iniciar Sesión</h1>
                     <p className="text-body-secondary">Ingrese sus credenciales</p>
+
+                    {loginError && (
+                      <div className="alert alert-danger" role="alert">
+                        {loginError}
+                      </div>
+                    )}
+
                     <CInputGroup className="mb-3">
                       <CInputGroupText>
                         <CIcon icon={cilUser} />
                       </CInputGroupText>
-                      <CFormInput placeholder="Email" autoComplete="username" />
+                      <CFormInput
+                        placeholder="Email"
+                        autoComplete="username"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        type="email"
+                      // feedbackInvalid="Por favor ingrese un correo electrónico válido"
+                      />
+                      <CFormFeedback invalid>Por favor ingrese un correo electrónico válido</CFormFeedback>
                     </CInputGroup>
+
                     <CInputGroup className="mb-4">
                       <CInputGroupText>
                         <CIcon icon={cilLockLocked} />
@@ -46,15 +114,21 @@ const Login = () => {
                         type="password"
                         placeholder="Contraseña"
                         autoComplete="current-password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      // feedbackInvalid="Por favor ingrese su contraseña"
                       />
+                      <CFormFeedback invalid>Por favor ingrese su contraseña</CFormFeedback>
                     </CInputGroup>
+
                     <CRow>
                       <CCol xs={6}>
-                        <CButton color="dark" className="px-4">
+                        <CButton color="dark" type="submit" className="px-4">
                           Ingresar
                         </CButton>
                       </CCol>
-                      <CCol xs={6} className="text-right">
+                      <CCol xs={6} className="text-end">
                         <CButton color="link" className="px-0">
                           ¿Olvidó su contraseña?
                         </CButton>
@@ -63,16 +137,14 @@ const Login = () => {
                   </CForm>
                 </CCardBody>
               </CCard>
-              <CCard className="text-white bg py-5"  style={{ width: '44%' }, {backgroundColor: '#00000099'}}>
+              <CCard className="text-white bg py-5" style={{ width: '44%', backgroundColor: '#00000099' }}>
                 <CCardBody className="text-center">
                   <div>
-                    <img className="flex items-center justify-center" src={logoDevilopers} height={65} style={{ 'paddingBottom': "5px" }} />
-                    <p>
-                      SISMED: Sistema dedicado al sector de salud y belleza.
-                    </p>
+                    <img src={logoDevilopers} height={65} alt="Logo" style={{ paddingBottom: "5px" }} />
+                    <p>SISMED: Sistema dedicado al sector de salud y belleza.</p>
                     <Link to="https://devilopers.org.pe/" target='_blank'>
                       <CButton color="dark" className="mt-3" active tabIndex={-1}>
-                        Visitanos!!
+                        ¡Visítanos!
                       </CButton>
                     </Link>
                   </div>
