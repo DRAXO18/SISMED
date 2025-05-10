@@ -8,46 +8,48 @@ use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-    // Muestra el formulario de login
-    public function showLoginForm()
-    {
-        return view('auth.login');
-    }
-
-    // Procesa el formulario de login
+    // Método login
     public function login(Request $request)
     {
-        // Validar los datos del formulario
         $request->validate([
             'email' => 'required|email',
             'password' => 'required',
         ]);
 
-        // Intentar autenticar al usuario
-        if (Auth::attempt([
-            'email' => $request->email,
-            'password' => $request->password
-        ], $request->remember)) {
-            // Si la autenticación es exitosa, redirige al dashboard
-            return redirect()->intended(route('dashboard'));
+        if (Auth::attempt($request->only('email', 'password'))) {
+            $user = Auth::user();
+
+            // Crea un token con Sanctum
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            // Aquí es importante usar 'Bearer' en la respuesta de la cabecera
+            return response()->json([
+                'message' => 'Login exitoso',
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+                'user' => $user
+            ], 200);
         }
 
-        // Si la autenticación falla, regresa con un error
-        return back()->withErrors([
-            'email' => 'Las credenciales no coinciden con nuestros registros.',
+        return response()->json([
+            'message' => 'Credenciales inválidas'
+        ], 401);
+    }
+
+
+    // Logout usando Sanctum
+    public function logout(Request $request)
+    {
+        $request->user()->tokens()->delete(); // Revoca todos los tokens
+
+        return response()->json([
+            'message' => 'Sesión cerrada'
         ]);
     }
 
-    // Función para redirigir al dashboard
-    public function dashboard()
+    // Obtener datos del usuario autenticado
+    public function user(Request $request)
     {
-        return view('dashboard');
-    }
-
-    // Cierra la sesión
-    public function logout(Request $request)
-    {
-        Auth::logout();
-        return redirect('/');
+        return response()->json($request->user());
     }
 }

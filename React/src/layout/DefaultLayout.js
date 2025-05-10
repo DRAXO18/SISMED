@@ -1,9 +1,11 @@
 import React from 'react'
 import { AppContent, AppSidebar, AppFooter, AppHeader } from '../components/index'
+import fondo from 'src/assets/images/fondoLogin3.jpg'
+
 
 const DefaultLayout = () => {
   return (
-    <div>
+    <div >
       <AppSidebar />
       <div className="wrapper d-flex flex-column min-vh-100">
         <AppHeader />
