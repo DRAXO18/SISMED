@@ -6,8 +6,35 @@ import SimpleBar from 'simplebar-react'
 import 'simplebar-react/dist/simplebar.min.css'
 
 import { CBadge, CNavLink, CSidebarNav } from '@coreui/react'
+import { usePermissions } from 'src/contexts/PermissionContext'
 
 export const AppSidebarNav = ({ items }) => {
+  const { permissions } = usePermissions()
+  // console.log('Permisos desde contexto:', permissions)
+
+  const filterNavItems = (items) => {
+    return items
+      .map((item) => {
+        if (item.items) {
+          const filteredChildren = filterNavItems(item.items)
+          if (filteredChildren.length > 0) {
+            return { ...item, items: filteredChildren }
+          }
+          return null
+        }
+
+        if (item.permission) {
+          // Ensure permissions is an array before calling includes
+          return Array.isArray(permissions) && permissions.includes(item.permission) ? item : null
+        }
+
+        return item
+      })
+      .filter(Boolean)
+  }
+
+  const filteredItems = filterNavItems(items)
+
   const navLink = (name, icon, badge, indent = false) => {
     return (
       <>
@@ -62,8 +89,10 @@ export const AppSidebarNav = ({ items }) => {
 
   return (
     <CSidebarNav as={SimpleBar}>
-      {items &&
-        items.map((item, index) => (item.items ? navGroup(item, index) : navItem(item, index)))}
+      {filteredItems &&
+        filteredItems.map((item, index) =>
+          item.items ? navGroup(item, index) : navItem(item, index),
+        )}
     </CSidebarNav>
   )
 }

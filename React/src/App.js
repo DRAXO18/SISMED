@@ -1,8 +1,9 @@
 import React, { Suspense, useEffect } from 'react'
-import { HashRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-
 import { CSpinner, useColorModes } from '@coreui/react'
+import ResetPasswordPage from './views/Auth/ResetPasswordPage'
+import { PermissionProvider } from './contexts/PermissionContext'
 import './scss/style.scss'
 
 // We use those styles to show code examples, you should remove them in your application.
@@ -14,9 +15,11 @@ const AuthLayout = React.lazy(() => import('./layout/AuthLayout'))
 
 // Pages
 const Login = React.lazy(() => import('./views/auth/login'))
-const Register = React.lazy(() => import('./views/pages/register/Register'))
+// const Register = React.lazy(() => import('./views/pages/register/Register'))
 const Page404 = React.lazy(() => import('./views/pages/page404/Page404'))
 const Page500 = React.lazy(() => import('./views/pages/page500/Page500'))
+
+const ProtectedRoute = React.lazy(() => import('./ProtectedRoute.js'))
 
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
@@ -37,26 +40,37 @@ const App = () => {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <HashRouter>
-      <Suspense
-        fallback={
-          <div className="pt-3 text-center">
-            <CSpinner color="primary" variant="grow" />
-          </div>
-        }
-      >
-        <Routes>
-          <Route element={<AuthLayout />}>
-            <Route path="/" name="Login Page" element={<Login />} />
-            {/* <Route path="/register" name="Register Page" element={<Register />} /> */}
-            <Route path="/404" name="Page 404" element={<Page404 />} />
-            <Route path="/500" name="Page 500" element={<Page500 />} />
-          </Route>
+    <BrowserRouter>
+      <PermissionProvider>
+        <Suspense
+          fallback={
+            <div className="pt-3 text-center">
+              <CSpinner color="primary" variant="grow" />
+            </div>
+          }
+        >
+          <Routes>
+            <Route element={<AuthLayout />}>
+              <Route path="/" name="Login Page" element={<Login />} />
+              {/* <Route path="/register" name="Register Page" element={<Register />} /> */}
+              <Route path="/404" name="Page 404" element={<Page404 />} />
+              <Route path="/500" name="Page 500" element={<Page500 />} />
+              <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+            </Route>
 
-          <Route path="*" name="Home" element={<DefaultLayout />} />
-        </Routes>
-      </Suspense>
-    </HashRouter>
+            <Route
+              path="*"
+              name="Home"
+              element={
+                <ProtectedRoute>
+                  <DefaultLayout />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </Suspense>
+      </PermissionProvider>
+    </BrowserRouter>
   )
 }
 

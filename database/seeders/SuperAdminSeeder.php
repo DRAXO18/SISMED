@@ -24,12 +24,12 @@ class SuperAdminSeeder extends Seeder
 
         // Crear el usuario Superadmin
         $user = User::create([
-            'nombre' => 'Juan',
-            'apellido_paterno' => 'Perez',
-            'apellido_materno' => 'Lopez',
-            'email' => 'superadmin@ejemplo.com',
+            'nombre' => 'Jose',
+            'apellido_paterno' => 'Tueros',
+            'apellido_materno' => 'Moron',
+            'email' => 'tuerosjose6@gmail.com',
             'password' => Hash::make('superadmin123'), // Contraseña ficticia
-            'numero_identificacion' => 123456789,
+            'numero_identificacion' => 12345678,
             'idTipo_identificacion' => 1, // Tipo de identificación
             'fecha_nacimiento' => '1990-01-01',
             'telefono' => '123456789',

@@ -122,6 +122,7 @@ const Index = () => {
             type="email"
             className="form-control border-primary"
             name="email"
+            autoComplete="email"
             value={formData.email}
             onChange={handleChange}
           />
@@ -133,6 +134,7 @@ const Index = () => {
             type="password"
             className="form-control border-primary"
             name="password"
+            autoComplete="current-password"
             value={formData.password}
             onChange={handleChange}
           />

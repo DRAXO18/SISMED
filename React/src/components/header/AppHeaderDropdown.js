@@ -1,4 +1,7 @@
+/* eslint-disable prettier/prettier */
+
 import React from 'react'
+import { useState, useEffect } from 'react'
 
 import {
   CAvatar,
@@ -20,29 +23,67 @@ import {
   cilSettings,
   cilTask,
   cilUser,
+  cilAccountLogout,
 } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 
 import avatar8 from './../../assets/images/avatars/8.jpg'
 
 const AppHeaderDropdown = () => {
+  const [userData, setUserData] = useState(null)
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/user', {
+          method: 'GET',
+          credentials: 'include', // 👈 Importante para enviar cookies
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setUserData(data)
+        } else {
+          console.warn('Usuario no autenticado')
+          setUserData(null)
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error)
+      }
+    }
+
+    fetchUserData()
+  }, [])
 
   const handleLogOut = async (e) => {
     e.preventDefault()
-    const response = await fetch('http://localhost:8000/api/logout', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      credentials: 'include', // Important for sending cookies with the request
-    })
-    if (response.ok) {
-      // Redirect to login page or perform other logout actions
-      window.location.href = '/login'
+
+    try {
+      const response = await fetch('http://localhost:8000/api/logout', {
+        method: 'POST',
+        credentials: 'include', // 👈 Enviar cookie al backend
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+      })
+
+      if (response.ok) {
+        // Si tu backend borra la cookie, solo rediriges
+        window.location.href = '/'
+        Swal.fire('Sesión cerrada', 'Saliste correctamente', 'success')
+      } else {
+        const data = await response.json()
+        console.error('Error en logout:', data)
+      }
+    } catch (error) {
+      console.error('Error de conexión al cerrar sesión:', error)
     }
   }
-
 
   return (
     <CDropdown variant="nav-item">
@@ -50,62 +91,57 @@ const AppHeaderDropdown = () => {
         <CAvatar src={avatar8} size="md" />
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
-        <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">Cuenta</CDropdownHeader>
+        {/* Sección de información del usuario */}
+        <CDropdownHeader className="bg-body-secondary fw-semibold py-2">
+          {userData ? (
+            <div className="text-center">
+              <div className="fw-bold">
+                {userData.nombre} {userData.apellido_paterno} {userData.apellido_materno}
+              </div>
+              <div className="small text-muted">{userData.email}</div>
+            </div>
+          ) : (
+            'Cuenta'
+          )}
+        </CDropdownHeader>
+
+        {/* Sección de notificaciones */}
         <CDropdownItem href="#">
           <CIcon icon={cilBell} className="me-2" />
-          Updates
+          Notificaciones
           <CBadge color="info" className="ms-2">
             42
           </CBadge>
         </CDropdownItem>
-        {/* <CDropdownItem href="#">
-          <CIcon icon={cilEnvelopeOpen} className="me-2" />
-          Messages
-          <CBadge color="success" className="ms-2">
-            42
-          </CBadge>
-        </CDropdownItem>
-        <CDropdownItem href="#">
-          <CIcon icon={cilTask} className="me-2" />
-          Tasks
-          <CBadge color="danger" className="ms-2">
-            42
-          </CBadge>
-        </CDropdownItem>
-        <CDropdownItem href="#">
-          <CIcon icon={cilCommentSquare} className="me-2" />
-          Comments
-          <CBadge color="warning" className="ms-2">
-            42
-          </CBadge>
-        </CDropdownItem> */}
-        <CDropdownHeader className="bg-body-secondary fw-semibold my-2">Configuración</CDropdownHeader>
+
+        <CDropdownDivider />
+
+        {/* Sección de configuración */}
+        <CDropdownHeader className="bg-body-secondary fw-semibold my-2">
+          Configuración
+        </CDropdownHeader>
+
         <CDropdownItem href="#">
           <CIcon icon={cilUser} className="me-2" />
-          Profile
+          Perfil
         </CDropdownItem>
+
         <CDropdownItem href="#">
           <CIcon icon={cilSettings} className="me-2" />
-          Settings
+          Ajustes
         </CDropdownItem>
-        <CDropdownItem href="#">
-          <CIcon icon={cilCreditCard} onClick={handleLogOut} className="me-2" />
-          Cerrar Sesión
-          <CBadge color="secondary" className="ms-2">
-            X
-          </CBadge>
-        </CDropdownItem>
-        {/* <CDropdownItem href="#">
-          <CIcon icon={cilFile} className="me-2" />
-          Projects
-          <CBadge color="primary" className="ms-2">
-            42
-          </CBadge>
-        </CDropdownItem> */}
+
         <CDropdownDivider />
+
+        {/* Opciones de seguridad */}
         <CDropdownItem href="#">
           <CIcon icon={cilLockLocked} className="me-2" />
           Bloquear Pantalla
+        </CDropdownItem>
+
+        <CDropdownItem onClick={handleLogOut} style={{ cursor: 'pointer' }}>
+          <CIcon icon={cilAccountLogout} className="me-2 text-danger" />
+          <span className="text-danger">Cerrar Sesión</span>
         </CDropdownItem>
       </CDropdownMenu>
     </CDropdown>

@@ -7,7 +7,8 @@ const Typography = React.lazy(() => import('./views/theme/typography/Typography'
 const Login = React.lazy(() => import('./views/auth/login'))
 
 // Usuarios
-const Usuarios = React.lazy(() => import('./views/usuarios/index'))
+const UsuariosIndex = React.lazy(() => import('./views/usuarios/usuarios/Index'))
+const RolesAccesosIndex = React.lazy(() => import('./views/usuarios/roles-accesos/Index'))
 
 // Base
 const Accordion = React.lazy(() => import('./views/base/accordion/Accordion'))
@@ -58,9 +59,15 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 
 const routes = [
   { path: '/', exact: true, name: 'Login', element: Login },
-  { path: '/dashboard', name: 'Dashboard', element: Dashboard },
+  { path: '/dashboard', name: 'Dashboard', element: Dashboard, permission: 'vista_dashboard' },
 
-  { path: '/usuarios', name: 'Usuarios', element: Usuarios },
+  { path: '/usuarios', name: 'Usuarios', element: UsuariosIndex, permission: 'vista usuarios' },
+  {
+    path: '/roles-accesos',
+    name: 'Roles-Accesos',
+    element: RolesAccesosIndex,
+    permission: 'vista roles/accesos',
+  },
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/theme/colors', name: 'Colors', element: Colors },
   { path: '/theme/typography', name: 'Typography', element: Typography },

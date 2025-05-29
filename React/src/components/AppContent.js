@@ -4,6 +4,7 @@ import { CContainer, CSpinner } from '@coreui/react'
 
 // routes config
 import routes from '../routes'
+import PermissionRoute from './protected/PermissionRoute'
 
 const AppContent = () => {
   return (
@@ -11,16 +12,19 @@ const AppContent = () => {
       <Suspense fallback={<CSpinner color="primary" />}>
         <Routes>
           {routes.map((route, idx) => {
+            if (!route.element) return null
             return (
-              route.element && (
-                <Route
-                  key={idx}
-                  path={route.path}
-                  exact={route.exact}
-                  name={route.name}
-                  element={<route.element />}
-                />
-              )
+              <Route
+                key={idx}
+                path={route.path}
+                exact={route.exact}
+                name={route.name}
+                element={
+                  <PermissionRoute requiredPermission={route.permission}>
+                    <route.element />
+                  </PermissionRoute>
+                }
+              />
             )
           })}
           <Route path="/" element={<Navigate to="dashboard" replace />} />

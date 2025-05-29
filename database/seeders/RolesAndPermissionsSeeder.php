@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
@@ -12,22 +11,40 @@ class RolesAndPermissionsSeeder extends Seeder
 {
     public function run(): void
     {
-        // Limpia la caché
+        // Limpia la caché de permisos
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Crea el permiso por defecto
-        $permiso = Permission::firstOrCreate(['name' => 'vista usuarios']);
+        // Lista de permisos basados en el menú _nav
+        $permisos = [
+            'vista_dashboard',
+            'vista usuarios',
+            'vista roles/accesos',
+            'vista_citas',
+            'vista_sesiones',
+            'vista_pagos',
+            'vista_reportes',
+            'vista_tratamientos',
+        ];
 
-        // Crea el rol por defecto
-        $superAdmin = Role::firstOrCreate(['name' => 'superadmin']);
+        // Crear permisos si no existen
+        foreach ($permisos as $permiso) {
+            Permission::firstOrCreate(['name' => $permiso]);
+        }
 
-        // Asigna el permiso al rol
-        $superAdmin->givePermissionTo($permiso);
+        // Crear el rol administrador
+        $administrador = Role::firstOrCreate(['name' => 'administrador']);
 
-        // Opcional: Asigna el rol a un usuario por defecto (ej. id = 1)
-        $usuario = User::find(1); // o busca por email
+        // Asignar todos los permisos al rol
+        $administrador->syncPermissions($permisos); // reemplaza todos los permisos anteriores del rol
+
+        // Asignar el rol administrador al usuario con ID 7
+        $usuario = User::find(7);
         if ($usuario) {
-            $usuario->assignRole('superadmin');
+            // Si quieres reemplazar todos los roles del usuario:
+            $usuario->syncRoles(['administrador']);
+
+            // Si solo quieres agregarlo sin quitar los anteriores:
+            // $usuario->assignRole('administrador');
         }
     }
 }

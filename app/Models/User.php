@@ -4,14 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
-use Laravel\Sanctum\HasApiTokens;
+// use Laravel\Sanctum\HasApiTokens;
 
 
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles;
 
     /**
      * Los atributos que se pueden asignar masivamente.
@@ -32,6 +33,7 @@ class User extends Authenticatable
         'activo',
         'last_login_at',
         'failed_attempts',
+        'is_blocked',
         'password_reset_token',
         'token_expiration',
     ];
@@ -58,4 +60,15 @@ class User extends Authenticatable
         'last_login_at' => 'datetime',
         'token_expiration' => 'datetime',
     ];
+    
+
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
 }

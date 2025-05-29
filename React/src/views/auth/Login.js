@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
+import { usePermissions } from '../../contexts/PermissionContext'
 import Swal from 'sweetalert2'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import ForgotPasswordModal from './ForgotPasswordModal'
 
 import fondoLogin from 'src/assets/images/fondoLogin2.jpg'
 import logoDevilopers from 'src/assets/images/deviloperslogo.webp'
@@ -25,13 +27,16 @@ import { cilLockLocked, cilUser } from '@coreui/icons'
 
 const Login = () => {
   const navigate = useNavigate()
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false)
   const [email, setEmail] = useState('')
+  const { fetchPermissions } = usePermissions()
   const [password, setPassword] = useState('')
   const [validated, setValidated] = useState(false)
   const [loginError, setLoginError] = useState('')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setLoginError('')
 
     const form = e.currentTarget
     if (form.checkValidity() === false) {
@@ -49,26 +54,52 @@ const Login = () => {
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
+        credentials: 'include', // ⬅️ Importante: incluye cookies en la petición
         body: JSON.stringify({ email, password }),
-        credentials: 'include', // Para asegurar que las cookies se envíen
       })
 
+      const data = await response.json()
+
       if (response.ok) {
-        const data = await response.json()
-        localStorage.setItem('token', data.token)
+        // Ya NO usamos localStorage ni el token manualmente
+        await fetchPermissions()
         Swal.fire('Bienvenido', 'Has iniciado sesión correctamente', 'success')
         navigate('/dashboard')
       } else {
-        const data = await response.json()
-        setLoginError(data.message || 'Credenciales incorrectas')
+        if (data.blocked) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Cuenta bloqueada',
+            text: data.message,
+          })
+        } else {
+          setLoginError(data.message)
+
+          if (data.attempts_left === 1) {
+            Swal.fire({
+              icon: 'warning',
+              title: 'Atención',
+              text: data.message,
+              confirmButtonText: 'Entendido',
+            })
+          }
+        }
       }
     } catch (error) {
       setLoginError('Error de conexión. Intente nuevamente.')
+      console.error('Error:', error)
     }
   }
 
   return (
-    <div style={{ backgroundImage: `url(${fondoLogin})`, backgroundSize: 'cover', backgroundPosition: 'center' }} className="min-vh-100 d-flex flex-row align-items-center">
+    <div
+      style={{
+        backgroundImage: `url(${fondoLogin})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+      className="min-vh-100 d-flex flex-row align-items-center"
+    >
       <CContainer>
         <CRow className="justify-content-center">
           <CCol md={8}>
@@ -101,9 +132,11 @@ const Login = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         required
                         type="email"
-                      // feedbackInvalid="Por favor ingrese un correo electrónico válido"
+                        // feedbackInvalid="Por favor ingrese un correo electrónico válido"
                       />
-                      <CFormFeedback invalid>Por favor ingrese un correo electrónico válido</CFormFeedback>
+                      <CFormFeedback invalid>
+                        Por favor ingrese un correo electrónico válido
+                      </CFormFeedback>
                     </CInputGroup>
 
                     <CInputGroup className="mb-4">
@@ -117,7 +150,7 @@ const Login = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
-                      // feedbackInvalid="Por favor ingrese su contraseña"
+                        // feedbackInvalid="Por favor ingrese su contraseña"
                       />
                       <CFormFeedback invalid>Por favor ingrese su contraseña</CFormFeedback>
                     </CInputGroup>
@@ -129,7 +162,7 @@ const Login = () => {
                         </CButton>
                       </CCol>
                       <CCol xs={6} className="text-end">
-                        <CButton color="link" className="px-0">
+                        <CButton className="px-0" onClick={() => setShowForgotPasswordModal(true)}>
                           ¿Olvidó su contraseña?
                         </CButton>
                       </CCol>
@@ -137,12 +170,20 @@ const Login = () => {
                   </CForm>
                 </CCardBody>
               </CCard>
-              <CCard className="text-white bg py-5" style={{ width: '44%', backgroundColor: '#00000099' }}>
+              <CCard
+                className="text-white bg py-5"
+                style={{ width: '44%', backgroundColor: '#00000099' }}
+              >
                 <CCardBody className="text-center">
                   <div>
-                    <img src={logoDevilopers} height={65} alt="Logo" style={{ paddingBottom: "5px" }} />
+                    <img
+                      src={logoDevilopers}
+                      height={65}
+                      alt="Logo"
+                      style={{ paddingBottom: '5px' }}
+                    />
                     <p>SISMED: Sistema dedicado al sector de salud y belleza.</p>
-                    <Link to="https://devilopers.org.pe/" target='_blank'>
+                    <Link to="https://devilopers.org.pe/" target="_blank">
                       <CButton color="dark" className="mt-3" active tabIndex={-1}>
                         ¡Visítanos!
                       </CButton>
@@ -154,6 +195,10 @@ const Login = () => {
           </CCol>
         </CRow>
       </CContainer>
+      <ForgotPasswordModal
+        visible={showForgotPasswordModal}
+        onClose={() => setShowForgotPasswordModal(false)}
+      />
     </div>
   )
 }

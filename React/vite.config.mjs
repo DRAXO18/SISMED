@@ -44,11 +44,11 @@ export default defineConfig(() => {
       proxy: {
         // https://vitejs.dev/config/server-options.html
         '/api': {
-        target: 'http://127.0.0.1:8000', // URL de tu backend de Laravel
-        changeOrigin: true,
-        secure: false, // Si es necesario para aceptar conexiones inseguras
-        rewrite: (path) => path.replace(/^\/api/, ''), // Reemplaza "/api" por un path vacío en las peticiones
-      },
+          target: 'http://127.0.0.1:8000', // URL de tu backend de Laravel
+          changeOrigin: true,
+          secure: false, // Si es necesario para aceptar conexiones inseguras
+          rewrite: (path) => path.replace(/^\/api/, ''), // Reemplaza "/api" por un path vacío en las peticiones
+        },
       },
     },
   }
