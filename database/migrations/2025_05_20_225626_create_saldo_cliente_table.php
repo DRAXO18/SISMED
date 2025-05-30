@@ -13,7 +13,16 @@ return new class extends Migration
     {
         Schema::create('saldo_cliente', function (Blueprint $table) {
             $table->id();
+
+            $table->foreignId('cliente_id')->constrained('users')->onDelete('cascade');
+
+            $table->decimal('monto', 10, 2)->default(0); // Saldo actual disponible
+
+            $table->timestamp('fecha_actualizacion')->useCurrent();
+
             $table->timestamps();
+
+            $table->index('cliente_id');
         });
     }
 

@@ -12,8 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tratamientos', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+            $table->bigIncrements('id');
+            $table->string('nombre', 255)->index();
+            $table->text('descripcion')->nullable();
+            $table->integer('sesiones_base');
+            $table->decimal('costo_sesion_base', 10, 2);
+            $table->decimal('costo_total_base', 10, 2);
+            $table->boolean('activo')->default(true);
+            $table->timestamps(); 
         });
     }
 

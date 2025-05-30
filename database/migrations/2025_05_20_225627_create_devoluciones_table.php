@@ -13,7 +13,12 @@ return new class extends Migration
     {
         Schema::create('devoluciones', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->foreignId('pago_id')->constrained('pagos')->onDelete('cascade');
+            $table->foreignId('usuario_id')->nullable()->constrained('users')->onDelete('set null'); // Quien gestionó
+            $table->text('motivo')->nullable(); // Motivo de devolución (puede ser legal, satisfacción, error, etc.)
+            $table->decimal('monto', 10, 2); // Monto que fue devuelto
+            $table->dateTime('fecha'); // Fecha efectiva de devolución
+            $table->timestamps(); // created_at y updated_at
         });
     }
 
